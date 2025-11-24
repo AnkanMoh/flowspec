@@ -32,4 +32,5 @@ if st.button("Generate PRD"):
 
         st.subheader("Related Documents")
         for src in state.context_sources:
-            card(src["title"], f"Source ID: {src['id']}")
+            card(src["title"], "Source Document")
+
