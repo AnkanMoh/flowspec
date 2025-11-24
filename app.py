@@ -7,8 +7,8 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("⚡ FlowSpec")
-st.caption("Your AI-powered PM Copilot for contextual PRDs and product insights.")
+st.title("FlowSpec")
+st.caption("Your AI-powered PM Copilot")
 
 st.write("")
 st.subheader(" Quick Actions")
@@ -18,13 +18,13 @@ col1, col2 = st.columns(2)
 with col1:
     card(
         "Upload your product database",
-        "Import CSV files containing previous PRDs, project notes, and specs. FlowSpec will use this as your knowledge graph.",
+        "Import CSV files containing previous PRDs, project notes, and specs. FlowSpec will use this as your knowledge graph."
     )
 
 with col2:
     card(
         "Generate a new PRD",
-        "Turn any feature idea into a complete, structured, context-aware Product Requirements Document.",
+        "Turn any feature idea into a complete, structured, context-aware Product Requirements Document."
     )
 
 st.subheader(" What FlowSpec Can Do")
@@ -41,8 +41,3 @@ card(
     "📄"
 )
 
-card(
-    "Multi-Page Clean UI",
-    "Navigate between tasks without clutter. Each action has its own clean dedicated page.",
-    "📁"
-)
