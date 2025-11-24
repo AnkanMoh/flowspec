@@ -21,11 +21,7 @@ mode = st.radio("Mode", ["Speed", "Quality"], index=0)
 
 if st.button("Generate PRD"):
     with st.spinner("FlowSpec is analyzing and generating your PRD..."):
-        state = run_orchestrator(
-            idea_text=idea,
-            local_docs=docs,
-            max_docs=5
-        )
+        state = run_orchestrator(idea, docs, max_docs=5)
 
         st.subheader("📄 Generated PRD")
         st.markdown(state.prd_markdown)
