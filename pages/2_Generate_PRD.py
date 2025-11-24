@@ -17,6 +17,8 @@ idea = st.text_area(
     placeholder="Example: Allow users to manage multiple saved payment methods…"
 )
 
+mode = st.radio("Mode", ["Speed", "Quality"], index=0)
+
 if st.button("Generate PRD"):
     with st.spinner("FlowSpec is analyzing and generating your PRD..."):
         state = run_orchestrator(
