@@ -1,65 +1,41 @@
-from llm_client import call_llm, FAST_MODEL, QUALITY_MODEL
 from pm_state import PMState
+from llm_client import FAST_MODEL, QUALITY_MODEL, call_llm
+from concurrent.futures import ThreadPoolExecutor
+import functools
 
+def trim(text, max_chars=250):
+    return text[:max_chars] if text else ""
+
+@functools.lru_cache(maxsize=256)
+def run_fast(prompt, model):
+    return call_llm(prompt, model)
 
 def run_orchestrator(idea, docs, max_docs=5):
     state = PMState(idea_text=idea)
 
-    ranked = sorted(
-        docs,
-        key=lambda d: sum(
-            w in (d.get("title", "") + d.get("content", "")).lower()
-            for w in idea.lower().split()
-        ),
-        reverse=True,
-    )
+    idea_words = set(idea.lower().split())
 
-    selected = ranked[:max_docs]
-    state.context_sources = [{"title": d.get("title", "Untitled")} for d in selected]
+    def score_doc(d):
+        text = (d.get("title","") + " " + d.get("content","")).lower()
+        return (sum(w in text for w in idea_words), d)
 
-    context_text = "\n".join([d.get("content", "")[:200] for d in selected])
+    with ThreadPoolExecutor() as exe:
+        scored = list(exe.map(score_doc, docs))
 
-    ctx_prompt = f"""
-    You are FlowSpec, a product research agent.
+    top_docs = [d for _, d in sorted(scored, key=lambda x: x[0], reverse=True)[:max_docs]]
 
-    IDEA:
-    {idea}
+    state.context_sources = [
+        {"title": d.get("title", "Untitled"), "id": f"doc-{i}"}
+        for i, d in enumerate(top_docs)
+    ]
 
-    RELEVANT DOC SNIPPETS:
-    {context_text}
+    context_text = "\n".join(trim(d.get("content", "")) for d in top_docs)
 
-    Summarize:
-    - main themes
-    - likely overlaps/conflicts
-    - 5 key questions a PM should ask before scoping this.
-    """
-    ctx = call_llm(ctx_prompt, model=FAST_MODEL)
+    context_prompt = f"Summarize the following content:\n{context_text}"
+    ctx = run_fast(context_prompt, FAST_MODEL)
     state.context_snippets.append(ctx)
 
-    prd_prompt = f"""
-    You are an experienced product manager.
+    prd_prompt = f"Generate a structured PRD.\nIDEA:\n{idea}\n\nCONTEXT:\n{ctx}"
+    state.prd_markdown = run_fast(prd_prompt, QUALITY_MODEL)
 
-    Write a clear, structured PRD.
-
-    IDEA:
-    {idea}
-
-    CONTEXT (from internal docs):
-    {ctx}
-
-    Follow this structure:
-
-    # Title
-    # Summary
-    # Problem Statement
-    # Goals & Non-Goals
-    # Users & Use Cases
-    # Requirements
-    ## Functional Requirements
-    ## Non-Functional Requirements
-    # Risks & Assumptions
-    # Open Questions
-    """
-
-    state.prd_markdown = call_llm(prd_prompt, model=QUALITY_MODEL)
     return state
