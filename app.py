@@ -19,17 +19,15 @@ with col1:
     card(
         "Upload your product database",
         "Import CSV files containing previous PRDs, project notes, and specs. FlowSpec will use this as your knowledge graph.",
-        "📂"
     )
 
 with col2:
     card(
         "Generate a new PRD",
         "Turn any feature idea into a complete, structured, context-aware Product Requirements Document.",
-        "🧠"
     )
 
-st.subheader("📚 What FlowSpec Can Do")
+st.subheader(" What FlowSpec Can Do")
 
 card(
     "Contextual Research",
