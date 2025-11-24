@@ -2,7 +2,7 @@ import streamlit as st
 from agents import run_orchestrator
 from components.cards import card
 
-st.title("🧠 Generate PRD")
+st.title("Generate PRD")
 st.caption("FlowSpec analyzes your database and creates a contextual PRD.")
 
 docs = st.session_state.get("flowspec_docs")
