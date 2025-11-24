@@ -1,77 +1,65 @@
-from typing import Optional, List, Dict
+from llm_client import call_llm, FAST_MODEL, QUALITY_MODEL
 from pm_state import PMState
-from llm_client import call_llm
 
-def rank_docs(idea_text: str, docs: List[Dict[str, str]]):
-    idea_tokens = set(idea_text.lower().split())
-    scored = []
 
-    for d in docs:
-        text = (d.get("title", "") + " " + d.get("content", "")).lower()
-        score = len(idea_tokens & set(text.split()))
-        scored.append((score, d))
+def run_orchestrator(idea, docs, max_docs=5):
+    state = PMState(idea_text=idea)
 
-    scored.sort(key=lambda x: x[0], reverse=True)
-    return [d for score, d in scored]
+    ranked = sorted(
+        docs,
+        key=lambda d: sum(
+            w in (d.get("title", "") + d.get("content", "")).lower()
+            for w in idea.lower().split()
+        ),
+        reverse=True,
+    )
 
-def build_context(idea: str, docs: List[Dict[str, str]], max_docs=5):
-    ranked = rank_docs(idea, docs)
     selected = ranked[:max_docs]
+    state.context_sources = [{"title": d.get("title", "Untitled")} for d in selected]
 
-    lines = []
-    for d in selected:
-        lines.append(f"- {d.get('title')} — {d.get('content','')[:200]}")
+    context_text = "\n".join([d.get("content", "")[:200] for d in selected])
 
-    return "\n".join(lines), selected
-
-def run_orchestrator(idea_text, local_docs, max_docs=5, user_id="demo-user"):
-    state = PMState(user_id=user_id, idea_text=idea_text)
-
-    summary, selected_docs = build_context(idea_text, local_docs, max_docs)
-    state.context_sources = [
-        {"title": d.get("title"), "url": d.get("url",""), "id": f"local-{i}"}
-        for i, d in enumerate(selected_docs)
-    ]
-
-    context_prompt = f"""
+    ctx_prompt = f"""
     You are FlowSpec, a product research agent.
 
     IDEA:
-    {idea_text}
+    {idea}
 
-    RELEVANT CONTEXT:
-    {summary}
+    RELEVANT DOC SNIPPETS:
+    {context_text}
 
-    Provide:
-    - high-level context
-    - conflicts or overlaps
-    - 5 key PM clarifying questions
+    Summarize:
+    - main themes
+    - likely overlaps/conflicts
+    - 5 key questions a PM should ask before scoping this.
     """
-
-    context_response = call_llm(context_prompt)
-    state.context_snippets.append(context_response)
+    ctx = call_llm(ctx_prompt, model=FAST_MODEL)
+    state.context_snippets.append(ctx)
 
     prd_prompt = f"""
-    Write a complete PRD based on this idea and context.
+    You are an experienced product manager.
+
+    Write a clear, structured PRD.
 
     IDEA:
-    {idea_text}
+    {idea}
 
-    CONTEXT:
-    {context_response}
+    CONTEXT (from internal docs):
+    {ctx}
 
-    Follow structure:
+    Follow this structure:
+
     # Title
     # Summary
     # Problem Statement
     # Goals & Non-Goals
     # Users & Use Cases
     # Requirements
-    ## Functional
-    ## Non-functional
-    # Risks
+    ## Functional Requirements
+    ## Non-Functional Requirements
+    # Risks & Assumptions
     # Open Questions
     """
 
-    state.prd_markdown = call_llm(prd_prompt)
+    state.prd_markdown = call_llm(prd_prompt, model=QUALITY_MODEL)
     return state
