@@ -7,7 +7,7 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=API_KEY)
 
-FAST_MODEL = "models/gemini-2.0-flash"
+FAST_MODEL = "models/gemini-2.0-flash-lite-001"
 QUALITY_MODEL = "models/gemini-2.5-pro"
 
 def call_llm(prompt: str, model: str | None = None) -> str:
