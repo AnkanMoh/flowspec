@@ -7,8 +7,8 @@ API_KEY = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=API_KEY)
 
-FAST_MODEL = os.getenv("FLOWSPEC_FAST_MODEL", "models/gemini-1.5-flash")
-QUALITY_MODEL = os.getenv("FLOWSPEC_QUALITY_MODEL", "models/gemini-1.5-pro")
+FAST_MODEL = "models/gemini-2.0-flash"
+QUALITY_MODEL = "models/gemini-2.5-pro"
 
 def call_llm(prompt: str, model: str | None = None) -> str:
     if model is None:
