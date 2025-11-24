@@ -20,6 +20,6 @@ if uploaded:
 
     card(
         "Next Step",
-        "Navigate to the ** Generate PRD** page to use this database.",
+        "Navigate to the Generate PRD page to use this database.",
         "➡️"
     )
