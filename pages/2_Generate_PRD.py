@@ -30,8 +30,8 @@ if st.button("Generate PRD"):
 
         st.subheader("🔍 Research Context")
         for snippet in state.context_snippets:
-            card("Context Summary", snippet, "🧩")
+            card("Context Summary", snippet)
 
-        st.subheader("📚 Related Documents")
+        st.subheader("Related Documents")
         for src in state.context_sources:
-            card(src["title"], f"Source ID: {src['id']}", "📄")
+            card(src["title"], f"Source ID: {src['id']}")
