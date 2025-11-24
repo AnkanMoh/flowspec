@@ -1,4 +1,4 @@
-# ⚡ FlowSpec — AI PM Copilot
+# FlowSpec — AI PM Copilot
 
 FlowSpec turns messy product ideas into **complete PRDs**, using your own CSV workspace as a knowledge base.
 
